@@ -1,0 +1,60 @@
+# Clear the screen for a clean start
+Clear-Host
+
+# --- USER PROMPTS ---
+Write-Host "Canon Image Importer - Ultimate 'Smart Copy' Version" -ForegroundColor Green
+Write-Host "This script COPIES files and corrects for all timestamp issues (FAT & DST)."
+Write-Host "Your SD card will NOT be modified."
+Write-Host "--------------------------------------------------------------------------"
+
+# Get the source and destination paths from the user with your personalized examples
+$sourcePath = Read-Host "STEP 1: Enter the FULL path to your source folder (e.g., E:\DCIM\100CANON)"
+$jpegDestPath = Read-Host "STEP 2: Enter the FULL path to your JPEG folder (e.g., C:\Users\mmkk2\Desktop\DSLR\Untouched\JPEGs)"
+$cr2DestPath = Read-Host "STEP 3: Enter the FULL path to your CR2 folder (e.g., C:\Users\mmkk2\Desktop\DSLR\Untouched\RAWs)"
+
+# --- VALIDATION ---
+if (-not (Test-Path $sourcePath)) {
+    Write-Host "ERROR: The source path '$sourcePath' does not exist. Aborting." -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit
+}
+if (-not (Test-Path $jpegDestPath)) {
+    Write-Host "ERROR: The JPEG destination path '$jpegDestPath' does not exist. Aborting." -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit
+}
+if (-not (Test-Path $cr2DestPath)) {
+    Write-Host "ERROR: The CR2 destination path '$cr2DestPath' does not exist. Aborting." -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit
+}
+
+Write-Host "`nReady to begin the Ultimate Copy process. Press Enter to start." -ForegroundColor Cyan
+Read-Host
+
+# --- SCRIPT LOGIC USING ROBOCOPY FOR COPYING ---
+
+# 1. Copy JPEG Files
+Write-Host "`n-----------------------------------------------------------" -ForegroundColor Yellow
+Write-Host ">>> SAFELY COPYING JPEG FILES (*.jpg, *.jpeg)..." -ForegroundColor Yellow
+Write-Host "-----------------------------------------------------------"
+
+# /E   = Safe Copy (includes subdirectories)
+# /XX  = eXclude eXtra files (clean log)
+# /FFT = Use FAT File Timestamps (for 2-second precision)
+# /DST = Compensate for Daylight Saving Time (for 1-hour differences)
+robocopy $sourcePath $jpegDestPath *.jpg *.jpeg /E /XX /FFT /DST /NJH /NJS
+
+# 2. Copy CR2 Files
+Write-Host "`n-----------------------------------------------------------" -ForegroundColor Yellow
+Write-Host ">>> SAFELY COPYING CR2 RAW FILES (*.cr2)..." -ForegroundColor Yellow
+Write-Host "-----------------------------------------------------------"
+robocopy $sourcePath $cr2DestPath *.cr2 /E /XX /FFT /DST /NJH /NJS
+
+
+# --- FINAL SUMMARY ---
+Write-Host "`n-----------------------------------------------------------" -ForegroundColor Green
+Write-Host "Smart Copy Complete!" -ForegroundColor Green
+Write-Host "All new files have been COPIED. Your original files are still safe on the SD card."
+Write-Host "`n"
+Read-Host "Press Enter to close this window."
